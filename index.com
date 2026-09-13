@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สมุดบันทึกยอดขาย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Kanit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --bg:#FFFCF6;
+    --card:#FFFFFF;
+    --ink:#26324A;
+    --ink-soft:#7A8499;
+    --teal:#04B2A9;
+    --teal-dark:#037F79;
+    --coral:#FF6B4A;
+    --coral-dark:#E5502F;
+    --yellow:#FFC145;
+    --mint:#E7F9F5;
+    --peach:#FFEDE6;
+    --line:#ECE7DA;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    font-family:'Sarabun',sans-serif;
+    color:var(--ink);
+    padding:0 0 60px;
+  }
+
+  header{
+    background:
+      repeating-linear-gradient(
+        115deg,
+        var(--teal) 0px, var(--teal) 46px,
+        var(--teal-dark) 46px, var(--teal-dark) 52px
+      );
+    color:#fff;
+    padding:30px 20px 40px;
+    position:relative;
+    overflow:hidden;
+  }
+  header .wrap{position:relative;z-index:1;}
+  header h1{
+    font-family:'Kanit',sans-serif;
+    font-size:27px;
+    font-weight:700;
+    margin:0 0 4px;
+    text-shadow:0 2px 6px rgba(0,0,0,.15);
+  }
+  header p{
+    margin:0;
+    font-size:14px;
+    opacity:.92;
+  }
+  .sync-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:12px;
+    background:rgba(255,255,255,.22);
+    border:1px solid rgba(255,255,255,.4);
+    padding:5px 12px;
+    border-radius:20px;
+    font-size:12px;
+  }
+  .sync-dot{
+    width:7px;height:7px;border-radius:50%;
+    background:#3CE87A;
+    box-shadow:0 0 0 0 rgba(60,232,122,.6);
+    animation:pulse 2s infinite;
+  }
+  .sync-dot.off{background:#FFD166;animation:none;}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(60,232,122,.5);}
+    70%{box-shadow:0 0 0 6px rgba(60,232,122,0);}
+    100%{box-shadow:0 0 0 0 rgba(60,232,122,0);}
+  }
+
+  .wrap{max-width:840px;margin:0 auto;padding:0 16px;}
+
+  .banner{
+    margin-top:-16px;
+    background:var(--yellow);
+    color:#4A3300;
+    padding:12px 16px;
+    border-radius:12px;
+    font-size:13px;
+    display:none;
+    position:relative;
+    z-index:2;
+    box-shadow:0 4px 14px rgba(0,0,0,.08);
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:16px;
+    margin-top:22px;
+    box-shadow:0 6px 18px rgba(38,50,74,.06);
+    overflow:hidden;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .card-head h2{
+    font-family:'Kanit',sans-serif;
+    font-size:16px;
+    font-weight:600;
+    margin:0;
+    color:var(--ink);
+  }
+
+  .date-row{
+    padding:20px 20px 0;
+  }
+  .rows-container{
+    padding:14px 20px 4px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .entry-row-input{
+    display:grid;
+    grid-template-columns:1fr 90px 120px 34px;
+    gap:8px;
+    align-items:center;
+  }
+  .entry-row-input input{padding:9px 10px; font-size:14px;}
+  .row-remove{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    cursor:pointer;
+    font-size:16px;
+    padding:4px;
+    border-radius:6px;
+    height:36px;
+  }
+  .row-remove:hover{color:#fff; background:var(--coral);}
+  .row-actions{padding:2px 20px 16px;}
+  .add-row-btn{
+    background:var(--mint);
+    color:var(--teal-dark);
+    border:2px dashed var(--teal);
+    border-radius:10px;
+    padding:9px 14px;
+    font-family:'Sarabun',sans-serif;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+    width:100%;
+  }
+  .add-row-btn:hover{background:#DBF5EF;}
+  form#entryForm > .add-btn{
+    margin:0 20px 20px;
+    width:calc(100% - 40px);
+  }
+  @media (max-width:520px){
+    .entry-row-input{grid-template-columns:1fr 1fr auto;}
+    .entry-row-input .row-product{grid-column:1/-1;}
+  }
+  label{
+    display:block;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+    font-weight:500;
+  }
+  input, select{
+    width:100%;
+    padding:10px 12px;
+    border:2px solid var(--line);
+    border-radius:10px;
+    background:#FFFDF9;
+    font-family:'Sarabun',sans-serif;
+    font-size:15px;
+    color:var(--ink);
+    transition:border-color .15s;
+  }
+  input:focus, select:focus{
+    outline:none;
+    border-color:var(--teal);
+    background:#fff;
+  }
+  .add-btn{
+    grid-column:1/-1;
+    background:var(--coral);
+    color:#fff;
+    border:none;
+    padding:13px;
+    border-radius:12px;
+    font-family:'Sarabun',sans-serif;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:2px;
+    box-shadow:0 6px 14px rgba(255,107,74,.35);
+    transition:transform .1s, box-shadow .1s;
+  }
+  .add-btn:hover{background:var(--coral-dark); transform:translateY(-1px);}
+  .add-btn:active{transform:translateY(0);}
+
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    padding:20px;
+  }
+  .stat{
+    border-radius:14px;
+    padding:16px 14px;
+    text-align:left;
+    position:relative;
+  }
+  .stat .icon{font-size:18px; margin-bottom:6px; display:block;}
+  .stat .label{
+    font-size:12px;
+    margin-bottom:3px;
+    opacity:.85;
+  }
+  .stat .value{
+    font-family:'Kanit',sans-serif;
+    font-size:19px;
+    font-weight:700;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .sub{font-size:11px;margin-top:2px;opacity:.75;}
+
+  .stat.c-coral{background:var(--peach); color:var(--coral-dark);}
+  .stat.c-teal{background:var(--mint); color:var(--teal-dark);}
+  .stat.c-yellow{background:#FFF6E0; color:#8A5A00;}
+  .stat.c-navy{background:var(--ink); color:#fff;}
+  .stat.c-navy .label{color:#B9C2D6;}
+
+  .day-block{border-bottom:2px dashed var(--line);}
+  .day-block:last-child{border-bottom:none;}
+  .day-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:12px 20px;
+    background:var(--mint);
+    font-size:13px;
+    color:var(--teal-dark);
+  }
+  .day-title b{color:var(--ink);font-weight:600; font-size:14px;}
+  table{width:100%;border-collapse:collapse;}
+  th{
+    text-align:left;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    padding:8px 20px 6px;
+    text-transform:none;
+  }
+  td{
+    padding:9px 20px;
+    font-size:14px;
+    border-top:1px solid var(--line);
+  }
+  td.num, th.num{text-align:right;font-variant-numeric: tabular-nums;}
+  tr.entry-row:hover{background:#FFFCF6;}
+  .day-total-row td{
+    font-weight:700;
+    color:var(--coral-dark);
+    background:var(--peach);
+  }
+  .del{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    cursor:pointer;
+    font-size:16px;
+    padding:2px 6px;
+    border-radius:6px;
+  }
+  .del:hover{color:#fff; background:var(--coral);}
+  .empty{
+    padding:36px 20px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14px;
+  }
+  .actions{
+    display:flex;
+    gap:10px;
+    padding:16px 20px;
+    flex-wrap:wrap;
+  }
+  .actions button{
+    flex:1;
+    min-width:140px;
+    padding:11px;
+    border-radius:10px;
+    border:2px solid var(--teal);
+    background:#fff;
+    color:var(--teal-dark);
+    font-family:'Sarabun',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .actions button:hover{background:var(--mint);}
+  .actions button.ghost{border-color:var(--line); color:var(--ink-soft);}
+
+  @media (max-width:520px){
+    .summary-grid{grid-template-columns:1fr 1fr;}
+    th:nth-child(2), td:nth-child(2){display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>สมุดบันทึกยอดขายประจำวัน</h1>
+    <p>บันทึกรายการขาย ดูสรุปยอด ซิงค์ข้อมูลได้ทุกเครื่อง</p>
+    <div class="sync-pill"><span class="sync-dot off" id="syncDot"></span><span id="syncText">ยังไม่ได้เชื่อมต่อ Google Sheets</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="banner" id="setupBanner">
+    ⚙️ ยังไม่ได้ตั้งค่าการเชื่อมต่อ Google Sheets — ข้อมูลจะบันทึกไว้ในเครื่องนี้เท่านั้น ดูวิธีเชื่อมต่อได้ที่ด้านล่างของคำตอบนี้
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>เพิ่มรายการขาย</h2></div>
+    <form id="entryForm">
+      <div class="date-row">
+        <label for="f-date">วันที่ (ใช้กับทุกแถวด้านล่าง)</label>
+        <input type="date" id="f-date" required>
+      </div>
+      <div id="rowsContainer" class="rows-container"></div>
+      <div class="row-actions">
+        <button type="button" id="addRowBtn" class="add-row-btn">+ เพิ่มแถวสินค้า</button>
+      </div>
+      <button type="submit" class="add-btn">✓ บันทึกทั้งหมด</button>
+    </form>
+  </div>
+
+  <div class="card" id="summaryCard">
+    <div class="card-head"><h2>สรุปยอดขาย</h2></div>
+    <div class="summary-grid">
+      <div class="stat c-coral">
+        <span class="icon">💰</span>
+        <div class="label">ยอดขายวันนี้</div>
+        <div class="value" id="stat-today">0.00 ฿</div>
+      </div>
+      <div class="stat c-teal">
+        <span class="icon">📅</span>
+        <div class="label">ยอดขายเดือนนี้</div>
+        <div class="value" id="stat-month">0.00 ฿</div>
+      </div>
+      <div class="stat c-navy">
+        <span class="icon">🧾</span>
+        <div class="label">ยอดขายรวมทั้งหมด</div>
+        <div class="value" id="stat-all">0.00 ฿</div>
+      </div>
+      <div class="stat c-teal">
+        <span class="icon">📦</span>
+        <div class="label">จำนวนรายการทั้งหมด</div>
+        <div class="value" id="stat-count">0</div>
+      </div>
+      <div class="stat c-yellow">
+        <span class="icon">🏆</span>
+        <div class="label">สินค้าขายดีที่สุด</div>
+        <div class="value" id="stat-top" style="font-size:15px;">-</div>
+        <div class="sub" id="stat-top-sub"></div>
+      </div>
+      <div class="stat c-coral">
+        <span class="icon">📊</span>
+        <div class="label">เฉลี่ยต่อวัน</div>
+        <div class="value" id="stat-avg">0.00 ฿</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>รายการทั้งหมด</h2>
+    </div>
+    <div class="actions">
+      <button id="syncNow">🔄 ซิงค์ข้อมูลล่าสุด</button>
+      <button id="exportExcel" class="ghost">📤 ส่งออก Excel (.csv)</button>
+      <button id="exportPng" class="ghost">🖼️ บันทึกสรุปเป็นรูปภาพ</button>
+    </div>
+    <div id="ledger"></div>
+  </div>
+
+</div>
+
+<script>
+/* ===== ตั้งค่าการเชื่อมต่อ Google Sheets ===== */
+/* วาง Web app URL จาก Apps Script ตรงนี้ เช่น
+   const GAS_URL = 'https://script.google.com/macros/s/xxxxxxxx/exec'; */
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzHa9kJbQOUfQdc_BFTs0Vtch4XXYg19I3_CySxRAT2z7X0LXvSO2EX4Md41Cf4wVa2jg/exec';
+
+const LOCAL_KEY = 'dailySalesRecords';
+let records = [];
+let usingSheets = !!GAS_URL;
+
+const $ = id => document.getElementById(id);
+$('f-date').valueAsDate = new Date();
+
+let rowCounter = 0;
+function addRow(focus){
+  rowCounter++;
+  const id = 'row' + rowCounter;
+  const div = document.createElement('div');
+  div.className = 'entry-row-input';
+  div.dataset.rowId = id;
+  div.innerHTML = `
+    <input type="text" class="row-product" placeholder="สินค้า เช่น กาแฟเย็น">
+    <input type="number" class="row-qty" placeholder="จำนวน" min="1" step="1" value="1">
+    <input type="number" class="row-price" placeholder="ราคา/หน่วย" min="0" step="0.01">
+    <button type="button" class="row-remove" title="ลบแถวนี้">✕</button>
+  `;
+  div.querySelector('.row-remove').addEventListener('click', () => {
+    const container = $('rowsContainer');
+    if(container.children.length > 1){
+      div.remove();
+    } else {
+      div.querySelector('.row-product').value = '';
+      div.querySelector('.row-qty').value = 1;
+      div.querySelector('.row-price').value = '';
+    }
+  });
+  $('rowsContainer').appendChild(div);
+  if(focus) div.querySelector('.row-product').focus();
+  return div;
+}
+addRow(false);
+
+$('addRowBtn').addEventListener('click', () => addRow(true));
+
+if(!usingSheets){
+  $('setupBanner').style.display = 'block';
+  records = JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]');
+} else {
+  $('syncText').textContent = 'เชื่อมต่อ Google Sheets แล้ว';
+  $('syncDot').classList.remove('off');
+}
+
+function fmt(n){
+  return Number(n).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function monthStr(dateStr){ return dateStr.slice(0,7); }
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadFromSheets(){
+  if(!usingSheets) return;
+  $('syncText').textContent = 'กำลังซิงค์ข้อมูล...';
+  try{
+    const res = await fetch(GAS_URL, {method:'GET'});
+    const data = await res.json();
+    records = data;
+    $('syncText').textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH');
+    $('syncDot').classList.remove('off');
+    render();
+  }catch(err){
+    $('syncText').textContent = 'ซิงค์ไม่สำเร็จ ลองใหม่อีกครั้ง';
+    $('syncDot').classList.add('off');
+  }
+}
+
+function saveLocal(){
+  if(!usingSheets) localStorage.setItem(LOCAL_KEY, JSON.stringify(records));
+}
+
+$('entryForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const date = $('f-date').value;
+  if(!date) return;
+
+  const rowEls = Array.from($('rowsContainer').children);
+  const newRecords = [];
+  rowEls.forEach(rowEl => {
+    const product = rowEl.querySelector('.row-product').value.trim();
+    const qty = parseFloat(rowEl.querySelector('.row-qty').value);
+    const price = parseFloat(rowEl.querySelector('.row-price').value);
+    if(product && qty > 0 && price >= 0){
+      newRecords.push({
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2,6) + newRecords.length,
+        date, product, qty, price
+      });
+    }
+  });
+  if(newRecords.length === 0) return;
+
+  records.push(...newRecords);
+  render();
+  saveLocal();
+
+  // reset the form back to a single empty row, keep the same date for quick re-entry
+  $('rowsContainer').innerHTML = '';
+  addRow(true);
+
+  if(usingSheets){
+    for(const r of newRecords){
+      await fetch(GAS_URL, {
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({action:'add', date:r.date, product:r.product, qty:r.qty, price:r.price, total:r.qty*r.price}).toString()
+      });
+    }
+    setTimeout(loadFromSheets, 1200 + newRecords.length * 200);
+  }
+});
+
+async function deleteRecord(id){
+  records = records.filter(r => r.id !== id);
+  render();
+  saveLocal();
+
+  if(usingSheets){
+    await fetch(GAS_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({action:'delete', id}).toString()
+    });
+    setTimeout(loadFromSheets, 1200);
+  }
+}
+
+function render(){
+  const byDate = {};
+  records.forEach(r => { (byDate[r.date] = byDate[r.date] || []).push(r); });
+  const dates = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
+
+  const ledger = $('ledger');
+  if(dates.length === 0){
+    ledger.innerHTML = '<div class="empty">ยังไม่มีรายการขาย เริ่มบันทึกรายการแรกด้านบนได้เลย</div>';
+  } else {
+    ledger.innerHTML = dates.map(date => {
+      const items = byDate[date].slice().sort((a,b)=> a.product.localeCompare(b.product,'th'));
+      const dayTotal = items.reduce((s,r)=> s + r.qty*r.price, 0);
+      const dateLabel = new Date(date+'T00:00:00').toLocaleDateString('th-TH', {day:'numeric', month:'long', year:'numeric'});
+      return `
+        <div class="day-block">
+          <div class="day-title"><b>${dateLabel}</b><span>${items.length} รายการ</span></div>
+          <table>
+            <thead><tr>
+              <th>สินค้า</th><th class="num">จำนวน</th><th class="num">ราคา/หน่วย</th><th class="num">รวม</th><th></th>
+            </tr></thead>
+            <tbody>
+              ${items.map(r => `
+                <tr class="entry-row">
+                  <td>${escapeHtml(String(r.product))}</td>
+                  <td class="num">${r.qty}</td>
+                  <td class="num">${fmt(r.price)}</td>
+                  <td class="num">${fmt(r.qty*r.price)}</td>
+                  <td><button class="del" title="ลบรายการ" onclick="deleteRecord('${r.id}')">✕</button></td>
+                </tr>`).join('')}
+              <tr class="day-total-row">
+                <td colspan="3">รวมยอดขายวันนี้</td>
+                <td class="num">${fmt(dayTotal)} ฿</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>`;
+    }).join('');
+  }
+  updateSummary();
+}
+
+function updateSummary(){
+  const t = todayStr();
+  const m = monthStr(t);
+  let todayTotal = 0, monthTotal = 0, allTotal = 0;
+  const productTotals = {};
+  const daysSeen = new Set();
+
+  records.forEach(r => {
+    const amt = r.qty * r.price;
+    allTotal += amt;
+    daysSeen.add(r.date);
+    if(r.date === t) todayTotal += amt;
+    if(monthStr(r.date) === m) monthTotal += amt;
+    productTotals[r.product] = (productTotals[r.product] || 0) + r.qty;
+  });
+
+  $('stat-today').textContent = fmt(todayTotal) + ' ฿';
+  $('stat-month').textContent = fmt(monthTotal) + ' ฿';
+  $('stat-all').textContent = fmt(allTotal) + ' ฿';
+  $('stat-count').textContent = records.length;
+
+  const dayCount = daysSeen.size || 1;
+  $('stat-avg').textContent = fmt(allTotal / dayCount) + ' ฿';
+
+  const topEntries = Object.entries(productTotals).sort((a,b)=> b[1]-a[1]);
+  if(topEntries.length){
+    $('stat-top').textContent = topEntries[0][0];
+    $('stat-top-sub').textContent = 'ขายไป ' + topEntries[0][1] + ' หน่วย';
+  } else {
+    $('stat-top').textContent = '-';
+    $('stat-top-sub').textContent = '';
+  }
+}
+
+$('syncNow').addEventListener('click', () => {
+  if(usingSheets) loadFromSheets();
+  else render();
+});
+
+$('exportExcel').addEventListener('click', () => {
+  const rows = [['วันที่','สินค้า','จำนวน','ราคาต่อหน่วย','รวม (บาท)']];
+  records.slice().sort((a,b)=> a.date.localeCompare(b.date)).forEach(r => {
+    rows.push([r.date, r.product, r.qty, r.price.toFixed(2), (r.qty*r.price).toFixed(2)]);
+  });
+  const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'บันทึกยอดขาย_' + todayStr() + '.csv';
+  link.click();
+});
+
+$('exportPng').addEventListener('click', () => {
+  html2canvas($('summaryCard'), {backgroundColor:'#FFFCF6', scale:2}).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'สรุปยอดขาย_' + todayStr() + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+});
+
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && usingSheets) loadFromSheets();
+});
+
+if(usingSheets) loadFromSheets(); else render();
+</script>
+</body>
+</html>
